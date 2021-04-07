@@ -2,6 +2,7 @@ const csv = require('csv-parser')
 const fs = require('fs')
 const fetch = require("node-fetch");
 
+// Function to GET by URL and returns object with URL as the key and status as value
 function checkUrl(url) {
     return new Promise((res) => {
         fetch(url)
@@ -11,7 +12,8 @@ function checkUrl(url) {
     });
 }
 
-function validURL(str) {
+// Function to ensure the pixel URL is valid
+function validUrl(str) {
     try {
         const url = new URL(str);
         return true;
@@ -21,16 +23,17 @@ function validURL(str) {
     }
 }
 
+// Executes calls of all valid and returns counts of successful and failed counts and pixel URLs.
 async function makeCalls(urls, pixelCount) {
     const invalidUrls = urls
-        .filter(u => !validURL(u));
+        .filter(u => !validUrl(u));
 
     let successCount = 0;
     let failedCount = invalidUrls.length;
     let failedUrls = [...invalidUrls];
 
     const promises = urls
-        .filter(u => validURL(u))
+        .filter(u => validUrl(u))
         .slice(0, pixelCount-1)
         .map(u => checkUrl(new URL(u)));
 
@@ -52,6 +55,7 @@ async function makeCalls(urls, pixelCount) {
     return { successCount, failedCount, failedUrls };
 }
 
+// Cleans data from the CSV.
 async function processData(pixelCount) {
     return new Promise(res => {
         let cleanedData = [];
@@ -74,6 +78,7 @@ async function processData(pixelCount) {
     });
 }
 
+// Function to kick off pixel validation.
 async function executePixelValidation() {
     const arg = process.argv.splice(1,1)
     const pixelCount = isNaN(parseInt(arg)) ? 10 : parseInt(arg);
